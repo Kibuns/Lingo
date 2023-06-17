@@ -1,7 +1,6 @@
 package Logic
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Kibuns/Lingo/Models"
@@ -11,42 +10,36 @@ func ParseUserInput(input string, secretWord string) Models.ParsedInput {
 	var parsedInput Models.ParsedInput;
 	parsedInput.Letters = []Models.Letter{}
 
+	//keep track of a map in order to know if the algorithm has already assigned a Y of G to a letter in the guessed word
 	secretWordMap := make(map[rune]int)
 	for _, ch := range secretWord {
 		secretWordMap[ch]++
 	}
 
+	//check for G's
 	for i, ch := range input {
 		var l Models.Letter;
 		l.Char = string(ch)
 
-		fmt.Println(secretWordMap)
-
-		if secretWordMap[ch] > 0 {
-			if strings.ContainsRune(secretWord, ch) {
-				//secret word contains the character! but is it in the right spot?
-				if secretWord[i] == input[i] {
-					l.IsCorrect = true
-					l.IsPresent = true
-					secretWordMap[ch]--
-					fmt.Println(string(ch) + " is correct")
-				} else {
-					l.IsCorrect = false
-					l.IsPresent = true
-					secretWordMap[ch]--
-					fmt.Println(string(ch) + " is present")
-				}
-			} else{
-				l.IsCorrect = false
-				l.IsPresent = false
-				fmt.Println(string(ch) + " is incorrect")
-			}
-		} else{
+		if secretWord[i] == input[i] {
+			l.IsCorrect = true
+			secretWordMap[ch]--
+		} else {
 			l.IsCorrect = false
-			l.IsPresent = false
-			fmt.Println(string(ch) + " is incorrect")
 		}
+
 		addLetterToLetters(&l, &parsedInput)
+	}
+
+	//check for Y's
+	for i := range parsedInput.Letters {
+		l := &parsedInput.Letters[i]
+		ch := rune(l.Char[0])
+	
+		if strings.ContainsRune(secretWord, ch) && secretWordMap[ch] > 0 { //if the secret contains the character, but the wordmap is 0, it means theres already that same letter somewhere else in the word assigned as either Y or G
+			l.IsPresent = true
+			secretWordMap[ch]--
+		} 
 	}
 
 	parsedInput.GuessedWord = true;
@@ -57,7 +50,9 @@ func ParseUserInput(input string, secretWord string) Models.ParsedInput {
 	}
 
 	return parsedInput
+	
 }
+
 
 func addLetterToLetters(letter *Models.Letter, parsedInput *Models.ParsedInput) {
 	parsedInput.Letters = append(parsedInput.Letters, *letter)

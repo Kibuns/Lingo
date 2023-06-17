@@ -58,5 +58,5 @@ func helloWorld(w http.ResponseWriter, r *http.Request) {
 func helloQuery(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	query := vars["query"]
-	json.NewEncoder(w).Encode(Logic.ParseUserInput(query, "word"))
+	json.NewEncoder(w).Encode(Logic.ParseUserInput(query, "enima"))
 }

@@ -47,6 +47,47 @@ func TestSingleYellow(t *testing.T) {
 	testParser("tett", "test", "GG_G", t)
 }
 
+
+//below are generic tests based on my wordle inputs and their output
+func Test1(t *testing.T) {
+	testParser("scalp", "ranch", "_YY__", t)
+}
+
+func Test2(t *testing.T) {
+	testParser("canty", "ranch", "YGG__", t)
+}
+
+func Test3(t *testing.T) {
+	testParser("adieu", "alone", "G__Y_", t)
+}
+
+func Test4(t *testing.T) {
+	testParser("apple", "alone", "G__YG", t)
+}
+
+func Test5(t *testing.T) {
+	testParser("local", "iliac", "Y_YG_", t)
+}
+
+func Test6(t *testing.T) {
+	testParser("scalp", "iliac", "_YYY_", t)
+}
+
+func Test7(t *testing.T) {
+	testParser("milky", "iliac", "_YY__", t)
+}
+
+//7 letters
+func Test8(t *testing.T) {
+	testParser("errands", "anarchy", "_Y_YY__", t)
+}
+func Test9(t *testing.T) {
+	testParser("chantry", "anarchy", "YYGY_YG", t)
+}
+
+func Test10(t *testing.T) {
+	testParser("autopsy", "clothes", "__YY_Y_", t)
+}
 /*
 This method tests the inputParser by inputting "guess", with "secret" as the secret word.
 The outcome string represents a character for the correctness of each letter after being parsed.
@@ -69,7 +110,7 @@ func testParser(guess string, secret string, expectedOutcome string, t *testing.
 func createTestResult(letters []Models.Letter) string {
 	var testResult string = ""
 	for _, l := range letters {
-		if l.IsCorrect && l.IsPresent {testResult += "G"}
+		if l.IsCorrect {testResult += "G"}
 		if !l.IsCorrect && l.IsPresent {testResult += "Y"}
 		if !l.IsCorrect && !l.IsPresent {testResult += "_"}
 	}
