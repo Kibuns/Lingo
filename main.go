@@ -21,7 +21,7 @@ func handleRequests() {
 	server.Use(CORS)
 
 	server.HandleFunc("/", helloWorld)
-	server.HandleFunc("/query/{query}", helloQuery)
+	server.HandleFunc("/query/{query}", guessQuery)
 
     log.Println("API Gateway listening on http://localhost:8080")
     log.Fatal(http.ListenAndServe(":8080", server))
@@ -55,7 +55,7 @@ func helloWorld(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("'Hello world' endpoint hit")
 }
 
-func helloQuery(w http.ResponseWriter, r *http.Request) {
+func guessQuery(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	query := vars["query"]
 	json.NewEncoder(w).Encode(Logic.ParseUserInput(query, "enima"))
