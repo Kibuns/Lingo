@@ -6,13 +6,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Kibuns/Lingo/DAL"
 	"github.com/Kibuns/Lingo/Logic"
-
+	"github.com/Kibuns/Lingo/Models"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	fmt.Println("hello world")
 	handleRequests()
 }
 
@@ -22,6 +22,7 @@ func handleRequests() {
 
 	server.HandleFunc("/", helloWorld)
 	server.HandleFunc("/query/{query}", guessQuery)
+	server.HandleFunc("/start", startSession)
 
     log.Println("API Gateway listening on http://localhost:8080")
     log.Fatal(http.ListenAndServe(":8080", server))
@@ -58,5 +59,30 @@ func helloWorld(w http.ResponseWriter, r *http.Request) {
 func guessQuery(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	query := vars["query"]
-	json.NewEncoder(w).Encode(Logic.ParseUserInput(query, "enima"))
+	var id Models.ID
+
+	err := json.NewDecoder(r.Body).Decode(&id)
+	if err != nil {
+		http.Error(w, "Could not decode body into id", http.StatusBadRequest)
+		fmt.Println(err)
+		return
+	}
+
+	session, err := DAL.GetSession(id.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("secret word is: " + session.SecretWord)
+	json.NewEncoder(w).Encode(Logic.ParseUserInput(query, "test"))
+}
+
+func startSession(w http.ResponseWriter, r *http.Request) {
+	idString, err := DAL.StoreSession()
+	if err != nil{
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w, "started session: " + idString)
 }
