@@ -9,7 +9,6 @@ import (
 
 	"github.com/Kibuns/Lingo/Models"
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,10 +16,26 @@ import (
 )
 
 // global variable mongodb connection client
-var client mongo.Client = newClient()
-var sessionCollection = client.Database("SessionDB").Collection("sessions")
+var client *mongo.Client
+var err error
+var sessionCollection *mongo.Collection
+
+func init() {
+	client, err = newClient()
+	if err != nil {
+		// Handle the error here, such as logging or exiting the program
+		fmt.Println("Failed to connect to MongoDB:", err)
+	} else{
+		sessionCollection = client.Database("SessionDB").Collection("sessions")
+	}
+
+}
+
 
 func StoreSession() (string, error) {
+	if err != nil {
+		return "", fmt.Errorf("could not connect to database")
+	}
 	//simplify detaileduser to user
 	var session Models.Session
 	session.ID = uuid.New().String()
@@ -40,6 +55,9 @@ func StoreSession() (string, error) {
 }
 
 func GetSession(id string) (Models.Session, error) {
+	if err != nil {
+		return Models.Session{}, fmt.Errorf("could not connect to database")
+	}
 	fmt.Println("getting session")
 
 	// Create a filter to search for the document with the specified username
@@ -62,22 +80,25 @@ func GetSession(id string) (Models.Session, error) {
 	return result, nil
 }
 
-func newClient() (value mongo.Client) {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
-	var connectionstring = os.Getenv("CONNECTION_STRING")
-	fmt.Println("connectionstring: " + connectionstring)
-	clientOptions := options.Client().ApplyURI(connectionstring)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		panic(err)
-	}
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		panic(err)
-	}
-	value = *client
+func newClient() (client *mongo.Client, err error) {
+	// err = godotenv.Load()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return
+	connectionString := os.Getenv("CONNECTION_STRING")
+	fmt.Println("connectionstring: " + connectionString)
+
+	clientOptions := options.Client().ApplyURI(connectionString)
+	client, err = mongo.Connect(context.TODO(), clientOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.Ping(context.TODO(), readpref.Primary())
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
