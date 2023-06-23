@@ -9,6 +9,7 @@ import (
 
 	"github.com/Kibuns/Lingo/Models"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -36,7 +37,8 @@ func StoreSession() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("could not connect to database")
 	}
-	//simplify detaileduser to user
+
+
 	var session Models.Session
 	session.ID = uuid.New().String()
 	session.Guesses = 0
@@ -60,7 +62,7 @@ func GetSession(id string) (Models.Session, error) {
 	}
 	fmt.Println("getting session")
 
-	// Create a filter to search for the document with the specified username
+	// Create a filter to search for the document with the specified id
 	filter := bson.M{"id": id}
 
 	// Find the first document that matches the filter
@@ -81,13 +83,12 @@ func GetSession(id string) (Models.Session, error) {
 }
 
 func newClient() (client *mongo.Client, err error) {
-	// err = godotenv.Load()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	err = godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
 
 	connectionString := os.Getenv("CONNECTION_STRING")
-	fmt.Println("connectionstring: " + connectionString)
 
 	clientOptions := options.Client().ApplyURI(connectionString)
 	client, err = mongo.Connect(context.TODO(), clientOptions)
